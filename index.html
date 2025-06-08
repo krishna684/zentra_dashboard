@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ZENTRA Data Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h2>Sensor Data</h2>
+    <div>
+        <label for="deviceSelect">Device:</label>
+        <select id="deviceSelect"></select>
+        <label for="startInput">Start:</label>
+        <input type="datetime-local" id="startInput">
+        <label for="endInput">End:</label>
+        <input type="datetime-local" id="endInput">
+        <button id="loadBtn">Load</button>
+    </div>
+    <canvas id="sensorChart"></canvas>
+
+    <script>
+    const deviceSelect = document.getElementById('deviceSelect');
+    const startInput = document.getElementById('startInput');
+    const endInput = document.getElementById('endInput');
+    const loadBtn = document.getElementById('loadBtn');
+    let chart;
+
+    function fetchDevices() {
+        fetch('/sensors')
+            .then(res => res.json())
+            .then(data => {
+                const devices = data.devices || [];
+                deviceSelect.innerHTML = '';
+                devices.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d;
+                    opt.textContent = d;
+                    deviceSelect.appendChild(opt);
+                });
+                if (devices.length > 0) {
+                    loadData();
+                }
+            });
+    }
+
+    function loadData() {
+        const dev = deviceSelect.value;
+        const start = startInput.value;
+        const end = endInput.value;
+        const params = new URLSearchParams();
+        if (start) params.append('start', new Date(start).toISOString());
+        if (end) params.append('end', new Date(end).toISOString());
+
+        fetch(`/data/${dev}?` + params.toString())
+            .then(res => res.json())
+            .then(data => {
+                const timestamps = [];
+                const values = [];
+                if (data && data.measurements) {
+                    data.measurements.forEach(item => {
+                        timestamps.push(item.timestamp);
+                        values.push(item.value);
+                    });
+                }
+                if (chart) chart.destroy();
+                chart = new Chart(document.getElementById('sensorChart'), {
+                    type: 'line',
+                    data: {
+                        labels: timestamps,
+                        datasets: [{
+                            label: dev,
+                            data: values,
+                            borderColor: 'blue',
+                            borderWidth: 2,
+                            fill: false
+                        }]
+                    }
+                });
+            });
+    }
+
+    loadBtn.addEventListener('click', loadData);
+    fetchDevices();
+    </script>
+</body>
+</html>
