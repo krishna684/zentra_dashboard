@@ -12,7 +12,10 @@ app = Flask(__name__, template_folder='.')
 
 API_TOKEN = os.getenv('ZENTRA_API_TOKEN')
 # Comma-separated list of device IDs
-DEVICE_IDS = [d.strip() for d in os.getenv('ZENTRA_DEVICE_IDS', '').split(',') if d.strip()]
+# Default to the demo device ID if no environment variable is set
+DEVICE_IDS = [
+    d.strip() for d in os.getenv('ZENTRA_DEVICE_IDS', 'z6-23000').split(',') if d.strip()
+]
 
 def fetch_device_data(device_id: str, start: str | None = None, end: str | None = None):
     """Fetch data from the ZENTRA Cloud API for a single device."""

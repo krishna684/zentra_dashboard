@@ -16,7 +16,7 @@ A Flask web dashboard that fetches real-time and historical environmental sensor
    source venv/bin/activate
    pip install flask requests python-dotenv
    ```
-2. Copy `.env.example` to `.env` and fill in your ZENTRA Cloud API token and device IDs.
+2. Copy `.env.example` to `.env` and fill in your ZENTRA Cloud API token. The example includes the demo device `z6-23000`.
 3. Start the Flask development server:
    ```bash
    python app.py
