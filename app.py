@@ -1,6 +1,7 @@
-import requests
 import os
-from flask import Flask, render_template, jsonify
+
+import requests
+from flask import Flask, render_template, jsonify, request
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -8,24 +9,46 @@ load_dotenv()
 app = Flask(__name__)
 
 API_TOKEN = os.getenv('ZENTRA_API_TOKEN')
-DEVICE_ID = os.getenv('ZENTRA_DEVICE_ID')
+# Comma-separated list of device IDs
+DEVICE_IDS = [d.strip() for d in os.getenv('ZENTRA_DEVICE_IDS', '').split(',') if d.strip()]
+
+def fetch_device_data(device_id: str, start: str | None = None, end: str | None = None):
+    """Fetch data from the ZENTRA Cloud API for a single device."""
+    if not API_TOKEN:
+        return None
+
+    headers = {"Authorization": f"Bearer {API_TOKEN}"}
+    url = f"https://api.zentracloud.com/v1/devices/{device_id}/data"
+    params = {}
+    if start:
+        params["start"] = start
+    if end:
+        params["end"] = end
+    response = requests.get(url, headers=headers, params=params)
+    if response.status_code == 200:
+        return response.json()
+    return None
+
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', device_ids=DEVICE_IDS)
 
-@app.route('/get-data')
-def get_data():
-    headers = {
-        "Authorization": f"Bearer {API_TOKEN}"
-    }
-    url = f"https://api.zentracloud.com/v1/devices/{DEVICE_ID}/data"
+@app.route('/data/<device_id>')
+def get_data(device_id):
+    """Return JSON data for a device given optional start/end params."""
+    start = request.args.get('start')
+    end = request.args.get('end')
+    data = fetch_device_data(device_id, start=start, end=end)
+    if data is not None:
+        return jsonify(data)
+    return jsonify({'error': 'Failed to fetch data'}), 500
 
-    response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        return jsonify(response.json())
-    else:
-        return jsonify({'error': 'Failed to fetch data'}), 500
+
+@app.route('/sensors')
+def list_sensors():
+    """Return available sensor/device IDs."""
+    return jsonify({'devices': DEVICE_IDS})
 
 if __name__ == '__main__':
     app.run(debug=True)
