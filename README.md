@@ -23,5 +23,7 @@ A Flask web dashboard that fetches real-time and historical environmental sensor
    ```
 4. Visit `http://localhost:5000` in your browser.
 
+If deploying to a static host such as Netlify, serve the `index.html` file from the project root so the dashboard loads correctly.
+
 ## Extending
 The code is organised so `fetch_device_data` can be reused by background jobs or integrations. Future enhancements might store data in a time-series database or trigger alerts when measurements exceed thresholds.

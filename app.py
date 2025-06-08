@@ -6,7 +6,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-app = Flask(__name__)
+# Use the repository root as the template folder so Netlify can serve
+# the same index.html file that Flask renders.
+app = Flask(__name__, template_folder='.')
 
 API_TOKEN = os.getenv('ZENTRA_API_TOKEN')
 # Comma-separated list of device IDs
