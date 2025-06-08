@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ZENTRA Data Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h2>Sensor Data</h2>
+    <canvas id="sensorChart"></canvas>
+
+    <script>
+    fetch('/get-data')
+        .then(res => res.json())
+        .then(data => {
+            const timestamps = [];
+            const values = [];
+
+            if (data.measurements) {
+                data.measurements.forEach(item => {
+                    timestamps.push(item.timestamp);
+                    values.push(item.value);
+                });
+            }
+
+            new Chart(document.getElementById('sensorChart'), {
+                type: 'line',
+                data: {
+                    labels: timestamps,
+                    datasets: [{
+                        label: 'Sensor Value',
+                        data: values,
+                        borderColor: 'blue',
+                        borderWidth: 2,
+                        fill: false
+                    }]
+                }
+            });
+        });
+    </script>
+</body>
+</html>
